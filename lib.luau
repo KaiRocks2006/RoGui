@@ -362,6 +362,13 @@ function WindowMethods:Page(opts)
     opts = opts or {}
     local name = opts.Name or "Page"
     local page_obj = {}
+    setmetatable(page_obj, { __index = function(t, k)
+        if t._last_section and SectionMethods[k] then
+            return function(_, ...)
+                return t._last_section[k](t._last_section, ...)
+            end
+        end
+    end })
     local is_first = #self._pages == 0
     local page_frame = create("Frame", {
         Size = UDim2.new(1, 0, 1, 0),
@@ -1296,6 +1303,7 @@ function WindowMethods:Page(opts)
         holder.Parent = col_holder
         table.insert(self._pages or {}, { _frame = page_frame, _sections = { section_obj } })
         setmetatable(section_obj, { __index = SectionMethods })
+        self._last_section = section_obj
         return section_obj
     end
 
