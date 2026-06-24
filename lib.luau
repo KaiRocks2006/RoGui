@@ -363,9 +363,13 @@ function WindowMethods:Page(opts)
     local name = opts.Name or "Page"
     local page_obj = {}
     setmetatable(page_obj, { __index = function(t, k)
-        if t._last_section and SectionMethods[k] then
-            return function(_, ...)
-                return t._last_section[k](t._last_section, ...)
+        local last = rawget(t, "_last_section")
+        if last then
+            local method = last[k]
+            if method then
+                return function(_, ...)
+                    return method(last, ...)
+                end
             end
         end
     end })
